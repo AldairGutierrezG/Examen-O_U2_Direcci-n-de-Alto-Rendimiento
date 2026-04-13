@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Examen MOOC - Liderazgo</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+.header {
+    background: linear-gradient(135deg, #1e293b, #020617);
+    padding: 25px;
+    text-align: center;
+    border-bottom: 2px solid #334155;
+}
+
+.header h1 { color: #38bdf8; }
+.header h2 { font-weight: normal; }
+.header h3 { color: #94a3b8; }
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+.card {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.options label {
+    display: block;
+    padding: 10px;
+    margin: 5px 0;
+    background: #0f172a;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.options label:hover {
+    background: #334155;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    background: #22c55e;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.progress {
+    height: 8px;
+    background: #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #38bdf8;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+    <h1>DIRECCIÓN DE EQUIPOS DE ALTO RENDIMIENTO</h1>
+    <h2>U2. Liderazgo y manejo de grupos</h2>
+    <h3>Ing. Braulio Aldair Gutierrez G</h3>
+</div>
+
+<div class="container">
+
+    <!-- LOGIN -->
+    <div class="card">
+        <h3>Ingreso al examen</h3>
+        <input type="text" id="matricula" placeholder="Ingresa tu matrícula">
+        <button onclick="guardarMatricula()">Ingresar</button>
+    </div>
+
+    <!-- PROGRESO -->
+    <div class="progress">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- EXAMEN -->
+    <form id="examForm">
+        <div id="questions"></div>
+        <button type="button" onclick="submitExam()">Finalizar Examen</button>
+    </form>
+
+</div>
+
+<script>
+
+// 🔴 CAMBIA ESTA URL
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzKjMI0eeB3tJY8KK9rZm0CsqjzRYTIkVcyX2yBl-rcndwiE1cpetGFnjy2MnY74A3b/exec";
+
+let matriculaGlobal = "";
+
+// preguntas
+const questions = [
+"¿Qué es el liderazgo?",
+"En el contexto organizacional, el liderazgo implica:",
+"En proyectos de energía renovable, el liderazgo incluye:",
+"El liderazgo autocrático se caracteriza por:",
+"Una ventaja del liderazgo autocrático es:",
+"El liderazgo participativo se distingue por:",
+"Una ventaja del liderazgo participativo es:",
+"El liderazgo laissez-faire implica:",
+"Un riesgo del liderazgo laissez-faire es:",
+"El Grid Gerencial analiza:",
+"El eje X representa:",
+"El estilo 9.9 se caracteriza por:",
+"El liderazgo efectivo busca:",
+"El liderazgo en Tesla implicó:",
+"El empoderamiento significa:"
+];
+
+const options = [
+["Influir y guiar","Imponer normas","Control total","Supervisión"],
+["Evitar conflictos","Coordinar y decidir","Delegar todo","No intervenir"],
+["Evitar decisiones","Individual","Equipos multidisciplinarios","Limitar"],
+["Participación","Autonomía","Consenso","Centralización"],
+["Creatividad","Compromiso","Emergencias","Comunicación"],
+["Consulta","Individual","Control","Falta"],
+["Reduce interacción","Evita conflictos","Rigidez","Mejora decisiones"],
+["Supervisión","Control","Autonomía","Centralización"],
+["Falta coordinación","Control","Baja autonomía","Presión"],
+["Motivación","Estrés","Comunicación","Tareas y personas"],
+["Personas","Producción","Motivación","Comunicación"],
+["Bajo","Control","Bajo humano","Equilibrio"],
+["Resultados","Personas","Ambos","Evitar"],
+["Lento","Evitar presión","Delegar","Rápido"],
+["Control","Autonomía","Reducir","Evitar"]
+];
+
+// render
+const container = document.getElementById("questions");
+
+questions.forEach((q, i) => {
+    let html = `<div class="card">
+    <p><b>${i+1}.</b> ${q}</p>`;
+
+    options[i].forEach((opt, j) => {
+        html += `<label>
+        <input type="radio" name="q${i}" onchange="updateProgress()">
+        ${String.fromCharCode(65+j)}) ${opt}
+        </label>`;
+    });
+
+    html += "</div>";
+    container.innerHTML += html;
+});
+
+// guardar matrícula
+function guardarMatricula() {
+    const m = document.getElementById("matricula").value;
+    if (!m) return alert("Ingresa tu matrícula");
+    matriculaGlobal = m;
+    alert("Matrícula registrada ✅");
+}
+
+// progreso
+function updateProgress(){
+    let total = questions.length;
+    let answered = document.querySelectorAll("input:checked").length;
+    document.getElementById("progressBar").style.width = (answered/total)*100 + "%";
+}
+
+// enviar
+function submitExam(){
+
+    if (!matriculaGlobal) {
+        alert("Primero ingresa tu matrícula");
+        return;
+    }
+
+    let respuestas = [];
+
+    for (let i = 0; i < questions.length; i++) {
+        let sel = document.querySelector(`input[name=q${i}]:checked`);
+        if (!sel) return alert("Responde todo el examen");
+        respuestas.push(sel.parentElement.innerText.trim());
+    }
+
+    fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            matricula: matriculaGlobal,
+            respuestas: respuestas
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "ok") {
+            alert("Examen enviado correctamente 🎉");
+        } else {
+            alert("Matrícula no válida ❌");
+        }
+    })
+    .catch(() => alert("Error de conexión"));
+}
+
+</script>
+
+</body>
+</html>
